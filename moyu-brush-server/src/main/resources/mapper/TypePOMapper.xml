@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moyu.brush.server.mapper.TypePOMapper">
+
+    <resultMap id="BaseResultMap" type="com.moyu.brush.server.model.po.TypePO">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,name
+    </sql>
+    <select id="getALlByQuestionId" resultType="com.moyu.brush.server.model.po.TypePO">
+        SELECT
+            t.*
+        FROM
+            question_type qt INNER JOIN type t
+            ON qt.question_id = ${questionId} AND qt.type_id = t.id
+    </select>
+</mapper>
