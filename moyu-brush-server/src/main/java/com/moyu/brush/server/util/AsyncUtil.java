@@ -1,5 +1,7 @@
 package com.moyu.brush.server.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -11,8 +13,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@Slf4j
 public class AsyncUtil {
-
 
     public static <IN, OUT> CompletableFuture<List<OUT>> runFunctionsAsync(Function<IN, OUT> function, Collection<IN> collection, ExecutorService executorService) {
         List<CompletableFuture<OUT>> futures = collection.stream().map(item -> CompletableFuture.supplyAsync(
@@ -79,4 +81,5 @@ public class AsyncUtil {
 
         allOf.join();
     }
+
 }

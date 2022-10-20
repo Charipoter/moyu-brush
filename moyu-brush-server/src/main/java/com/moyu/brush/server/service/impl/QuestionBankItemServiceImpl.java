@@ -36,12 +36,12 @@ public class QuestionBankItemServiceImpl implements QuestionBankItemService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.NESTED)
+    @Transactional
     public boolean addOne(QuestionBankItemAdditionDTO additionDTO) {
         // 由于 json 多态序列化问题，暂时不在存储时解析对象
         QuestionBankItemPO questionBankItemPO = QuestionBankItemPO.builder()
                 .ruleString(additionDTO.getRuleString())
-//                .ruleObject(JSON.toJSONString(DelegatingEvaluationRuleResolver.resolve(additionDTO.getRuleString())))
+                .ruleObject(JSON.toJSONString(DelegatingEvaluationRuleResolver.resolve(additionDTO.getRuleString())))
                 .questionId(additionDTO.getQuestionId())
                 .questionBankId(additionDTO.getQuestionBankId())
                 .build();

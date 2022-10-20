@@ -9,6 +9,7 @@ import com.moyu.brush.server.model.po.QuestionBankItemPO;
 import com.moyu.brush.server.model.po.QuestionBankPO;
 import com.moyu.brush.server.service.*;
 import com.moyu.brush.server.util.AsyncUtil;
+import com.moyu.brush.server.util.AsyncUtilSupport;
 import com.moyu.question.bank.evaluate.EvaluationResult;
 import com.moyu.question.bank.model.bank.QuestionBank;
 import com.moyu.question.bank.model.bank.QuestionBankItem;
@@ -33,6 +34,8 @@ public class QuestionBankServiceImpl implements QuestionBankService {
     private ExecutorService executorService;
     @Autowired
     private DefaultEvaluator evaluator;
+    @Autowired
+    private AsyncUtilSupport asyncUtilSupport;
 
     @Override
     public QuestionBank getById(long questionBankId) {
@@ -56,6 +59,24 @@ public class QuestionBankServiceImpl implements QuestionBankService {
         return questionBankPage;
     }
 
+//    @Override
+//    @Transactional
+//    public boolean addOne(QuestionBankAdditionDTO additionDTO) {
+//        QuestionBankPO questionBankPO = QuestionBankPO.builder()
+//                .name(additionDTO.getName())
+//                .description(additionDTO.getDescription())
+//                .build();
+//
+//        questionBankPOService.save(questionBankPO);
+//        // 拿到 bankId 交给 item
+//        long questionBankId = questionBankPO.getId();
+//
+//        List<QuestionBankItemAdditionDTO> questionBankItemAdditionDTOList = additionDTO.getQuestionBankItemAdditionDTOList();
+//        questionBankItemAdditionDTOList.forEach(dto -> dto.setQuestionBankId(questionBankId));
+//        // 注意事务传播
+//        return questionBankItemService.addList(questionBankItemAdditionDTOList);
+//    }
+
     @Override
     @Transactional
     public boolean addOne(QuestionBankAdditionDTO additionDTO) {
@@ -70,8 +91,9 @@ public class QuestionBankServiceImpl implements QuestionBankService {
 
         List<QuestionBankItemAdditionDTO> questionBankItemAdditionDTOList = additionDTO.getQuestionBankItemAdditionDTOList();
         questionBankItemAdditionDTOList.forEach(dto -> dto.setQuestionBankId(questionBankId));
-        // 注意事务传播
-        return questionBankItemService.addList(questionBankItemAdditionDTOList);
+        // TODO:是否有效？是否特别耗资源？
+        List<Boolean> booleans = asyncUtilSupport.runFunctionsTransactional(questionBankItemService::addOne, questionBankItemAdditionDTOList, executorService);
+        return booleans.stream().allMatch(b -> b);
     }
 
     @Override
