@@ -3,6 +3,7 @@ package com.moyu.brush.server.model.po;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,6 +14,7 @@ import java.io.Serializable;
  */
 @TableName(value ="question_bank_item")
 @Data
+@Builder
 public class QuestionBankItemPO implements Serializable {
     /**
      * 

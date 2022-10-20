@@ -3,7 +3,7 @@ package com.moyu.brush.server.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.moyu.brush.server.model.po.QuestionBankPO;
-import com.moyu.brush.server.model.vo.PageVO;
+import com.moyu.brush.server.model.dto.PageDTO;
 
 /**
 * @author lenovo
@@ -12,6 +12,6 @@ import com.moyu.brush.server.model.vo.PageVO;
 */
 public interface QuestionBankPOService extends IService<QuestionBankPO> {
 
-    Page<QuestionBankPO> getPage(PageVO pageVO);
+    Page<QuestionBankPO> getPage(PageDTO pageDTO);
 
 }

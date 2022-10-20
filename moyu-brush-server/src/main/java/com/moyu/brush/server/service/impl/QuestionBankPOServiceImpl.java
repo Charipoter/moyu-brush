@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.moyu.brush.server.mapper.QuestionBankPOMapper;
 import com.moyu.brush.server.model.po.QuestionBankPO;
-import com.moyu.brush.server.model.vo.PageVO;
+import com.moyu.brush.server.model.dto.PageDTO;
 import com.moyu.brush.server.service.QuestionBankPOService;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +18,8 @@ public class QuestionBankPOServiceImpl extends ServiceImpl<QuestionBankPOMapper,
     implements QuestionBankPOService{
 
     @Override
-    public Page<QuestionBankPO> getPage(PageVO pageVO) {
-        Page<QuestionBankPO> page = Page.of(pageVO.getPageIndex(), pageVO.getPageSize());
+    public Page<QuestionBankPO> getPage(PageDTO pageDTO) {
+        Page<QuestionBankPO> page = Page.of(pageDTO.getPageIndex(), pageDTO.getPageSize());
 
         return page(page);
     }

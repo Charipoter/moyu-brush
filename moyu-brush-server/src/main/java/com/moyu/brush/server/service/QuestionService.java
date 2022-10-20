@@ -1,22 +1,27 @@
 package com.moyu.brush.server.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.moyu.brush.server.model.vo.PageVO;
+import com.moyu.brush.server.model.dto.PageDTO;
+import com.moyu.brush.server.model.dto.QuestionAdditionDTO;
+import com.moyu.brush.server.model.po.QuestionPO;
 import com.moyu.question.bank.model.question.Question;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public interface QuestionService {
 
     Question getOneById(long id);
 
-    List<Question> getAll() throws ExecutionException, InterruptedException;
+    List<Question> getAll();
 
-    Page<Question> getPage(PageVO pageVO) throws ExecutionException, InterruptedException;
+    Page<Question> getPage(PageDTO pageDTO);
 
-    boolean addOne(Question question) throws ExecutionException, InterruptedException;
+    boolean addOne(QuestionAdditionDTO additionDTO);
 
-    boolean deleteById(long questionId) throws ExecutionException, InterruptedException;
+    boolean deleteById(long questionId);
+
+    Question questionPO2Question(QuestionPO questionPO);
+
+    List<Question> questionPOList2QuestionList(List<QuestionPO> questionPOList);
 
 }
