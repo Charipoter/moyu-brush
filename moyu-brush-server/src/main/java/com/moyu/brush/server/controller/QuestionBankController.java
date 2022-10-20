@@ -1,9 +1,9 @@
 package com.moyu.brush.server.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.moyu.brush.server.component.evaluate.DefaultEvaluator;
 import com.moyu.brush.server.model.dto.PageDTO;
 import com.moyu.brush.server.model.dto.QuestionBankAdditionDTO;
+import com.moyu.brush.server.model.dto.QuestionBankEvaluationDTO;
 import com.moyu.brush.server.model.http.R;
 import com.moyu.brush.server.model.po.QuestionBankPO;
 import com.moyu.brush.server.service.QuestionBankPOService;
@@ -22,8 +22,6 @@ public class QuestionBankController {
     private QuestionBankPOService questionBankPOService;
     @Autowired
     private QuestionBankService questionBankService;
-    @Autowired
-    private DefaultEvaluator evaluator;
 
     @GetMapping("/basicInfo/page")
     public R getBasicInfoPage(@RequestBody PageDTO pageDTO) {
@@ -50,9 +48,14 @@ public class QuestionBankController {
     }
 
     @PostMapping("/evaluate/id/{questionBankId}")
-    public R evaluateQuestionBankById(@RequestBody List<Answer> submittedAnswers, @PathVariable long questionBankId) {
+    public R evaluateByQuestionBankId(@RequestBody List<Answer> submittedAnswers, @PathVariable long questionBankId) {
         QuestionBank questionBank = questionBankService.getById(questionBankId);
-        return R.ok(evaluator.evaluateQuestionBank(questionBank, submittedAnswers));
+        return R.ok(questionBankService.evaluate(questionBank, submittedAnswers));
+    }
+
+    @PostMapping("/evaluate/full")
+    public R evaluateByFull(@RequestBody QuestionBankEvaluationDTO evaluationDTO) {
+        return R.ok(questionBankService.evaluate(evaluationDTO.getQuestionBank(), evaluationDTO.getSubmittedAnswers()));
     }
 
     @PostMapping

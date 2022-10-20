@@ -1,11 +1,12 @@
 package com.moyu.brush.server.service.impl;
 
-import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.moyu.brush.server.model.dto.PageDTO;
 import com.moyu.brush.server.model.dto.QuestionAdditionDTO;
 import com.moyu.brush.server.model.po.*;
 import com.moyu.brush.server.service.*;
+import com.moyu.brush.server.util.AsyncUtil;
 import com.moyu.question.bank.model.question.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 @Service
 public class QuestionServiceImpl implements QuestionService {
@@ -24,11 +26,11 @@ public class QuestionServiceImpl implements QuestionService {
     @Autowired
     private QuestionPOService questionPOService;
     @Autowired
-    private AsyncService asyncService;
-    @Autowired
     private TypePOService typePOService;
     @Autowired
     private TagPOService tagPOService;
+    @Autowired
+    private ExecutorService executorService;
 
     @Override
     public Question getOneById(long id) {
@@ -84,16 +86,9 @@ public class QuestionServiceImpl implements QuestionService {
                 .stream()
                 .map(id -> QuestionTagRelation.builder().questionId(questionPO.getId()).tagId(id).build())
                 .toList();
-
-        CompletableFuture<Boolean> typeFuture = CompletableFuture.supplyAsync(() -> questionTypeRelationService.saveBatch(questionTypeRelations));
-        CompletableFuture<Boolean> tagFuture = CompletableFuture.supplyAsync(() -> questionTagRelationService.saveBatch(questionTagRelations));
-
-        try {
-            CompletableFuture.allOf(typeFuture, tagFuture).join();
-            return typeFuture.get() && tagFuture.get();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        // TODO:暂时不保证分布式事务，因此这里不能异步
+        return questionTypeRelationService.saveBatch(questionTypeRelations) &&
+                questionTagRelationService.saveBatch(questionTagRelations);
     }
 
     @Override
@@ -103,16 +98,9 @@ public class QuestionServiceImpl implements QuestionService {
         questionPOService.removeById(questionId);
 
         // 还需要移除 type、tag 相关信息
-        CompletableFuture<Boolean> typeFuture = CompletableFuture.supplyAsync(() -> questionTypeRelationService.deleteByQuestionId(questionId));
-        CompletableFuture<Boolean> tagFuture = CompletableFuture.supplyAsync(() -> questionTagRelationService.deleteByQuestionId(questionId));
-
-        try {
-            CompletableFuture.allOf(tagFuture, typeFuture).get();
-            return typeFuture.get() && tagFuture.get();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
+        // TODO:暂时不保证分布式事务，因此这里不能异步
+        return questionTypeRelationService.deleteByQuestionId(questionId) &&
+                questionTagRelationService.deleteByQuestionId(questionId);
     }
 
     @Override
@@ -129,7 +117,7 @@ public class QuestionServiceImpl implements QuestionService {
         CompletableFuture<List<TypePO>> typeFuture = CompletableFuture.supplyAsync(
                 () -> typePOService.getAllByQuestionId(questionPO.getId()));
 
-        asyncService.runFuturesAnyway(List.of(
+        AsyncUtil.runFuturesAnyway(List.of(
                 tagFuture,
                 typeFuture
         ));
@@ -155,7 +143,7 @@ public class QuestionServiceImpl implements QuestionService {
             return new ArrayList<>();
         }
 
-        return asyncService.runFunctions(this::questionPO2Question, questionPOList);
+        return AsyncUtil.runFunctions(this::questionPO2Question, questionPOList, executorService);
     }
 
 }
