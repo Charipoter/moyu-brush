@@ -12,11 +12,21 @@ public class GenericEvaluationRuleResolver implements EvaluationRuleResolver {
         GenericEvaluationRule rule = new GenericEvaluationRule();
         ImmutableMap.Builder<Integer, Float> builder = ImmutableMap.builder();
 
-        if (!ruleString.equals(RuleConstants.DEFAULT_NOOP)) {
+        String[] parts = ruleString.split(RuleConstants.IN_ITEM_PART_DELIMITER);
 
-            String[] mapping = ruleString.split(RuleConstants.MAPPING_DELIMITER);
+        if (parts.length == 0) {
+            throw new IllegalArgumentException("分数项不足");
+        }
 
-            builder.put(Integer.parseInt(mapping[0]), Float.parseFloat(mapping[1]));
+        for (String part : parts) {
+
+            if (!part.equals(RuleConstants.DEFAULT_NOOP)) {
+
+                String[] mapping = part.split(RuleConstants.MAPPING_DELIMITER);
+
+                builder.put(Integer.parseInt(mapping[0]), Float.parseFloat(mapping[1]));
+            }
+
         }
 
         rule.setScoreForCorrect(builder.build());
