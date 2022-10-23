@@ -5,8 +5,8 @@ import com.moyu.brush.server.model.dto.PageDTO;
 import com.moyu.brush.server.model.dto.QuestionBankAdditionDTO;
 import com.moyu.brush.server.model.dto.QuestionBankEvaluationDTO;
 import com.moyu.brush.server.model.http.R;
-import com.moyu.brush.server.model.po.QuestionBankPO;
-import com.moyu.brush.server.service.QuestionBankPOService;
+import com.moyu.brush.server.model.po.QuestionBankPo;
+import com.moyu.brush.server.service.QuestionBankPoService;
 import com.moyu.brush.server.service.QuestionBankService;
 import com.moyu.question.bank.model.bank.QuestionBank;
 import com.moyu.question.bank.model.question.Answer;
@@ -19,19 +19,19 @@ import java.util.List;
 @RequestMapping("/questionBanks")
 public class QuestionBankController {
     @Autowired
-    private QuestionBankPOService questionBankPOService;
+    private QuestionBankPoService questionBankPOService;
     @Autowired
     private QuestionBankService questionBankService;
 
     @GetMapping("/basicInfo/page")
     public R getBasicInfoPage(@RequestBody PageDTO pageDTO) {
-        Page<QuestionBankPO> page = questionBankPOService.getPage(pageDTO);
+        Page<QuestionBankPo> page = questionBankPOService.getPage(pageDTO);
         return R.ok(page);
     }
 
     @GetMapping("/basicInfo/id/{questionBankId}")
     public R getBasicInfoById(@PathVariable long questionBankId) {
-        QuestionBankPO questionBankPO = questionBankPOService.getById(questionBankId);
+        QuestionBankPo questionBankPO = questionBankPOService.getById(questionBankId);
         return R.ok(questionBankPO);
     }
 

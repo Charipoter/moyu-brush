@@ -26,7 +26,6 @@ public class BattleManager {
 
     // TODO: 有并发问题，连接关闭会出 bug
     // Message will not be sent because the WebSocket session has been closed
-
     // 每一个 session 对应一个当前实例，
     private Session session;
 

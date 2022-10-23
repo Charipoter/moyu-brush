@@ -29,7 +29,7 @@ public class QuestionBankItemController {
     }
 
     /**
-     * TODO：任何时候都允许细粒度添加么？
+     * 任何时候都允许细粒度添加么？
      */
     @PostMapping
     public R addOne(@RequestBody QuestionBankItemAdditionDTO additionDTO) {

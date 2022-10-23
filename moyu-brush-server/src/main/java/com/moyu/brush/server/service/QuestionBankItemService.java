@@ -1,7 +1,7 @@
 package com.moyu.brush.server.service;
 
 import com.moyu.brush.server.model.dto.QuestionBankItemAdditionDTO;
-import com.moyu.brush.server.model.po.QuestionBankItemPO;
+import com.moyu.brush.server.model.po.QuestionBankItemPo;
 import com.moyu.question.bank.evaluate.EvaluationResult;
 import com.moyu.question.bank.model.bank.QuestionBankItem;
 import com.moyu.question.bank.model.question.Answer;
@@ -17,6 +17,6 @@ public interface QuestionBankItemService {
     boolean addList(List<QuestionBankItemAdditionDTO> additionDTOList);
 
     EvaluationResult evaluate(QuestionBankItem questionBankItem, Answer submittedAnswer);
-    QuestionBankItem questionBankItemPO2QuestionBankItem(QuestionBankItemPO questionBankItemPO);
+    QuestionBankItem toQuestionBankItem(QuestionBankItemPo questionBankItemPO);
 
 }

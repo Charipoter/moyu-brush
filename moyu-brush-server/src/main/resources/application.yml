@@ -1,3 +1,5 @@
+
+
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/moyu_brush?useUnicode=true&useSSL=false
@@ -5,3 +7,8 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: 2001chendi
+  redis:
+    host: localhost
+    port: 6379
+server:
+  port: 9000

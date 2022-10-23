@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.moyu.brush.server.model.po.QuestionTypeRelation;
 import com.moyu.brush.server.service.QuestionTypeRelationService;
-import com.moyu.brush.server.mapper.QuestionTypePOMapper;
+import com.moyu.brush.server.mapper.QuestionTypeRelationMapper;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 * @createDate 2022-10-12 20:27:14
 */
 @Service
-public class QuestionTypeRelationServiceImpl extends ServiceImpl<QuestionTypePOMapper, QuestionTypeRelation>
+public class QuestionTypeRelationServiceImpl extends ServiceImpl<QuestionTypeRelationMapper, QuestionTypeRelation>
     implements QuestionTypeRelationService {
 
     @Override

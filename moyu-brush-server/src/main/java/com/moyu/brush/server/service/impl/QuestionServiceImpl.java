@@ -24,21 +24,21 @@ public class QuestionServiceImpl implements QuestionService {
     @Autowired
     private QuestionTagRelationService questionTagRelationService;
     @Autowired
-    private QuestionPOService questionPOService;
+    private QuestionPoService questionPoService;
     @Autowired
-    private TypePOService typePOService;
+    private TypePoService typePoService;
     @Autowired
-    private TagPOService tagPOService;
+    private TagPoService tagPoService;
     @Autowired
     private ExecutorService executorService;
 
     @Override
     public Question getOneById(long id) {
-        QuestionPO questionPO = questionPOService.getById(id);
+        QuestionPo questionPo = questionPoService.getById(id);
 
         Question question = null;
-        if (questionPO != null) {
-            question = questionPO2Question(questionPO);
+        if (questionPo != null) {
+            question = toQuestion(questionPo);
         }
 
         return question;
@@ -47,19 +47,19 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public List<Question> getAll() {
 
-        List<QuestionPO> questionPOList = questionPOService.list();
+        List<QuestionPo> questionPoList = questionPoService.list();
 
-        return questionPOList2QuestionList(questionPOList);
+        return toQuestionList(questionPoList);
     }
 
     @Override
     public Page<Question> getPage(PageDTO pageDTO) {
 
-        Page<QuestionPO> questionPOPage = Page.of(pageDTO.getPageIndex(), pageDTO.getPageSize());
+        Page<QuestionPo> questionPoPage = Page.of(pageDTO.getPageIndex(), pageDTO.getPageSize());
 
-        Page<QuestionPO> result = questionPOService.page(questionPOPage);
+        Page<QuestionPo> result = questionPoService.page(questionPoPage);
 
-        List<Question> questionList = questionPOList2QuestionList(result.getRecords());
+        List<Question> questionList = toQuestionList(result.getRecords());
 
         Page<Question> questionPage = Page.of(pageDTO.getPageIndex(), pageDTO.getPageSize(), result.getTotal());
         questionPage.setRecords(questionList);
@@ -71,20 +71,20 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     @Transactional
     public boolean addOne(QuestionAdditionDTO additionDTO) {
-        QuestionPO questionPO = QuestionPO.builder()
+        QuestionPo questionPo = QuestionPo.builder()
                 .stem(additionDTO.getStem()).answer(additionDTO.getStem()).build();
 
-        questionPOService.save(questionPO);
+        questionPoService.save(questionPo);
 
         // 还需要插入 tag、type 相关数据
         List<QuestionTypeRelation> questionTypeRelations = additionDTO.getTypeIds()
                 .stream()
-                .map(id -> QuestionTypeRelation.builder().questionId(questionPO.getId()).typeId(id).build())
+                .map(id -> QuestionTypeRelation.builder().questionId(questionPo.getId()).typeId(id).build())
                 .toList();
 
         List<QuestionTagRelation> questionTagRelations = additionDTO.getTagIds()
                 .stream()
-                .map(id -> QuestionTagRelation.builder().questionId(questionPO.getId()).tagId(id).build())
+                .map(id -> QuestionTagRelation.builder().questionId(questionPo.getId()).tagId(id).build())
                 .toList();
         // TODO:暂时不保证分布式事务，因此这里不能异步
         return questionTypeRelationService.saveBatch(questionTypeRelations) &&
@@ -95,7 +95,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public boolean deleteById(long questionId) {
 
-        questionPOService.removeById(questionId);
+        questionPoService.removeById(questionId);
 
         // 还需要移除 type、tag 相关信息
         // TODO:暂时不保证分布式事务，因此这里不能异步
@@ -104,18 +104,18 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public Question questionPO2Question(QuestionPO questionPO) {
+    public Question toQuestion(QuestionPo questionPo) {
 
         QuestionMetadata metadata = QuestionMetadata.builder()
-                .createTime(questionPO.getCreateTime())
-                .updateTime(questionPO.getUpdateTime())
+                .createTime(questionPo.getCreateTime())
+                .updateTime(questionPo.getUpdateTime())
                 .build();
 
-        CompletableFuture<List<TagPO>> tagFuture = CompletableFuture.supplyAsync(
-                () -> tagPOService.getAllByQuestionId(questionPO.getId()));
+        CompletableFuture<List<TagPo>> tagFuture = CompletableFuture.supplyAsync(
+                () -> tagPoService.getAllByQuestionId(questionPo.getId()));
 
-        CompletableFuture<List<TypePO>> typeFuture = CompletableFuture.supplyAsync(
-                () -> typePOService.getAllByQuestionId(questionPO.getId()));
+        CompletableFuture<List<TypePo>> typeFuture = CompletableFuture.supplyAsync(
+                () -> typePoService.getAllByQuestionId(questionPo.getId()));
 
         AsyncUtil.runFuturesAnyway(List.of(
                 tagFuture,
@@ -123,8 +123,8 @@ public class QuestionServiceImpl implements QuestionService {
         ));
 
         return Question.builder()
-                .answer(JSON.parseObject(questionPO.getAnswer(), Answer.class))
-                .stem(questionPO.getStem())
+                .answer(JSON.parseObject(questionPo.getAnswer(), Answer.class))
+                .stem(questionPo.getStem())
                 .metadata(metadata)
 
                 .tags(tagFuture.getNow(null).stream().map(
@@ -137,13 +137,13 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public List<Question> questionPOList2QuestionList(List<QuestionPO> questionPOList) {
+    public List<Question> toQuestionList(List<QuestionPo> questionPoList) {
 
-        if (questionPOList == null || questionPOList.size() == 0) {
+        if (questionPoList == null || questionPoList.size() == 0) {
             return new ArrayList<>();
         }
 
-        return AsyncUtil.runFunctions(this::questionPO2Question, questionPOList, executorService);
+        return AsyncUtil.runFunctions(this::toQuestion, questionPoList, executorService);
     }
 
 }

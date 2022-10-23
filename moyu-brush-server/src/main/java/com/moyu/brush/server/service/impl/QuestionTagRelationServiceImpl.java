@@ -2,7 +2,7 @@ package com.moyu.brush.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.moyu.brush.server.mapper.QuestionTagPOMapper;
+import com.moyu.brush.server.mapper.QuestionTagRelationMapper;
 import com.moyu.brush.server.model.po.QuestionTagRelation;
 import com.moyu.brush.server.service.QuestionTagRelationService;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 * @createDate 2022-10-12 20:27:14
 */
 @Service
-public class QuestionTagRelationServiceImpl extends ServiceImpl<QuestionTagPOMapper, QuestionTagRelation>
+public class QuestionTagRelationServiceImpl extends ServiceImpl<QuestionTagRelationMapper, QuestionTagRelation>
     implements QuestionTagRelationService {
 
     @Override
