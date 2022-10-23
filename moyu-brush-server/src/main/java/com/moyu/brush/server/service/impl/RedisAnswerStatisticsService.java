@@ -55,7 +55,12 @@ public class RedisAnswerStatisticsService implements AnswerStatisticsService {
     /**
      * 原子更新最高分的 lua 脚本
      */
-    public static final String UPDATE_HIGHEST_SCORE_SCRIPT = "if tonumber(redis.call('hget',KEYS[1],KEYS[2])) < tonumber(ARGV[1]) then return redis.call('hset',KEYS[1],KEYS[2],ARGV[1]) else return 0 end";
+    public static final String UPDATE_HIGHEST_SCORE_SCRIPT =
+            "local tmp = redis.call('hget',KEYS[1],KEYS[2]);" +
+                    "if not tmp or tonumber(tmp) < tonumber(ARGV[1]) then " +
+                    "   return redis.call('hset',KEYS[1],KEYS[2],ARGV[1]) " +
+                    "else " +
+                    "   return 0 end";
 
     @Override
     public TotalAnswerStatistics getTotalStatistics(long userId) {
@@ -64,13 +69,13 @@ public class RedisAnswerStatisticsService implements AnswerStatisticsService {
                         TOTAL_STATISTICS_SCORE_KEY,
                         TOTAL_STATISTICS_TIME_KEY
                 ));
-        Double score = (Double) rawResults.get(0);
-        Long time = (Long) rawResults.get(1);
+        Number score = (Number) rawResults.get(0);
+        Number time = (Number) rawResults.get(1);
 
         return TotalAnswerStatistics.builder()
                 .userId(userId)
-                .totalAnswerScore(score)
-                .totalMinutesSpent(time)
+                .totalAnswerScore(score == null ? 0 : score.doubleValue())
+                .totalMinutesSpent(time == null ? 0 : time.longValue())
                 .build();
     }
 
@@ -82,15 +87,15 @@ public class RedisAnswerStatisticsService implements AnswerStatisticsService {
                         BANK_STATISTICS_TIME_KEY,
                         BANK_STATISTICS_COUNT_KEY
                 ));
-        Float score = (Float) rawResults.get(0);
-        Long time = (Long) rawResults.get(1);
-        Long count = (Long) rawResults.get(2);
+        Number score = (Number) rawResults.get(0);
+        Number time = (Number) rawResults.get(1);
+        Number count = (Number) rawResults.get(2);
 
         return QuestionBankAnswerStatistics.builder()
                 .userId(userId)
-                .highestScore(score)
-                .totalMinutesSpent(time)
-                .finishCount(count)
+                .highestScore(score == null ? 0 : score.floatValue())
+                .totalMinutesSpent(time == null ? 0 : time.longValue())
+                .finishCount(count == null ? 0 : count.longValue())
                 .build();
     }
 
@@ -102,14 +107,18 @@ public class RedisAnswerStatisticsService implements AnswerStatisticsService {
     @Override
     public List<TotalAnswerRank.Score> getTotalScoreRank(int start, int size) {
         Set<ZSetOperations.TypedTuple<Object>> result = redisTemplate.opsForZSet()
-                .rangeWithScores(TOTAL_STATISTICS_SCORE_RANK_KEY, start, start + size - 1);
+                .reverseRangeWithScores(TOTAL_STATISTICS_SCORE_RANK_KEY, start, start + size - 1);
 
         if (result != null) {
             return result.stream().map(raw ->
-                    TotalAnswerRank.Score.builder()
-                            .userId((Long) raw.getValue())
-                            .totalAnswerScore(raw.getScore())
-                            .build()).toList();
+            {
+                Number userId = (Number) raw.getValue();
+                Double score = raw.getScore();
+                return TotalAnswerRank.Score.builder()
+                        .userId(userId == null ? -1 : userId.longValue())
+                        .totalAnswerScore(score == null ? 0 : score)
+                        .build();
+            }).toList();
         } else {
             return new ArrayList<>();
         }
@@ -123,14 +132,18 @@ public class RedisAnswerStatisticsService implements AnswerStatisticsService {
     @Override
     public List<TotalAnswerRank.Time> getTotalTimeRank(int start, int size) {
         Set<ZSetOperations.TypedTuple<Object>> result = redisTemplate.opsForZSet()
-                .rangeWithScores(TOTAL_STATISTICS_TIME_RANK_KEY, start, start + size - 1);
+                .reverseRangeWithScores(TOTAL_STATISTICS_TIME_RANK_KEY, start, start + size - 1);
 
         if (result != null) {
             return result.stream().map(raw ->
-                    TotalAnswerRank.Time.builder()
-                            .userId((Long) raw.getValue())
-                            .totalMinutesSpent(raw.getScore().longValue())
-                            .build()).toList();
+            {
+                Number userId = (Number) raw.getValue();
+                Double time = raw.getScore();
+                return TotalAnswerRank.Time.builder()
+                        .userId(userId == null ? -1 : userId.longValue())
+                        .totalMinutesSpent(time == null ? 0 : time.longValue())
+                        .build();
+            }).toList();
         } else {
             return new ArrayList<>();
         }
@@ -144,14 +157,18 @@ public class RedisAnswerStatisticsService implements AnswerStatisticsService {
     @Override
     public List<QuestionBankAnswerRank.Time> getBankTimeRank(long questionBankId, int start, int size) {
         Set<ZSetOperations.TypedTuple<Object>> result = redisTemplate.opsForZSet()
-                .rangeWithScores(BANK_STATISTICS_TIME_RANK_KEY_GENERATOR.apply(questionBankId), start, start + size - 1);
+                .reverseRangeWithScores(BANK_STATISTICS_TIME_RANK_KEY_GENERATOR.apply(questionBankId), start, start + size - 1);
 
         if (result != null) {
             return result.stream().map(raw ->
-                    QuestionBankAnswerRank.Time.builder()
-                            .userId((Long) raw.getValue())
-                            .totalMinutesSpent(raw.getScore().longValue())
-                            .build()).toList();
+            {
+                Number userId = (Number) raw.getValue();
+                Double time = raw.getScore();
+                return QuestionBankAnswerRank.Time.builder()
+                        .userId(userId == null ? -1 : userId.longValue())
+                        .totalMinutesSpent(time == null ? 0 : time.longValue())
+                        .build();
+            }).toList();
         } else {
             return new ArrayList<>();
         }
@@ -165,14 +182,18 @@ public class RedisAnswerStatisticsService implements AnswerStatisticsService {
     @Override
     public List<QuestionBankAnswerRank.Count> getBankCountRank(long questionBankId, int start, int size) {
         Set<ZSetOperations.TypedTuple<Object>> result = redisTemplate.opsForZSet()
-                .rangeWithScores(BANK_STATISTICS_COUNT_RANK_KEY_GENERATOR.apply(questionBankId), start, start + size - 1);
+                .reverseRangeWithScores(BANK_STATISTICS_COUNT_RANK_KEY_GENERATOR.apply(questionBankId), start, start + size - 1);
 
         if (result != null) {
             return result.stream().map(raw ->
-                    QuestionBankAnswerRank.Count.builder()
-                            .userId((Long) raw.getValue())
-                            .finishCount(raw.getScore().longValue())
-                            .build()).toList();
+            {
+                Number userId = (Number) raw.getValue();
+                Double count = raw.getScore();
+                return QuestionBankAnswerRank.Count.builder()
+                        .userId(userId == null ? -1 : userId.longValue())
+                        .finishCount(count == null ? 0 : count.longValue())
+                        .build();
+            }).toList();
         } else {
             return new ArrayList<>();
         }
@@ -181,9 +202,9 @@ public class RedisAnswerStatisticsService implements AnswerStatisticsService {
     @Override
     public boolean updateBankScoreIfNecessary(long userId, long questionBankId, float newScore) {
         // 如果分数更高了就更新，使用 lua 脚本
-        CompletableFuture<Integer> scoreFuture = CompletableFuture.supplyAsync(() ->
+        CompletableFuture<Long> scoreFuture = CompletableFuture.supplyAsync(() ->
                 redisTemplate.execute(
-                        new DefaultRedisScript<>(UPDATE_HIGHEST_SCORE_SCRIPT, Integer.class), List.of(
+                        new DefaultRedisScript<>(UPDATE_HIGHEST_SCORE_SCRIPT, Long.class), List.of(
                                 BANK_STATISTICS_MAP_KEY_GENERATOR.apply(userId, questionBankId),
                                 BANK_STATISTICS_SCORE_KEY
                         ), newScore)
@@ -197,7 +218,7 @@ public class RedisAnswerStatisticsService implements AnswerStatisticsService {
                 totalFuture
         ));
 
-        return scoreFuture.getNow(0) != 0 && totalFuture.getNow(false);
+        return scoreFuture.getNow(0L) != 0 && totalFuture.getNow(false);
     }
 
     @Override
@@ -220,9 +241,15 @@ public class RedisAnswerStatisticsService implements AnswerStatisticsService {
                                 increasedTime
                         )
         );
+        // 不论如何都要更新总数据
+        CompletableFuture<Boolean> totalFuture = CompletableFuture.supplyAsync(() ->
+            increaseTotalTime(userId, increasedTime)
+        );
+
         AsyncUtil.runFuturesAnyway(List.of(
                 timeFuture,
-                rankFuture
+                rankFuture,
+                totalFuture
         ));
         return true;
     }
@@ -247,6 +274,7 @@ public class RedisAnswerStatisticsService implements AnswerStatisticsService {
                                 increasedCount
                         )
         );
+
         AsyncUtil.runFuturesAnyway(List.of(
                 countFuture,
                 rankFuture
