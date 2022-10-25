@@ -23,7 +23,7 @@ public class QuestionBankController {
     @Autowired
     private QuestionBankService questionBankService;
 
-    @GetMapping("/basicInfo/page")
+    @PostMapping("/basicInfo/page")
     public R getBasicInfoPage(@RequestBody PageDTO pageDTO) {
         Page<QuestionBankPo> page = questionBankPOService.getPage(pageDTO);
         return R.ok(page);
@@ -35,7 +35,7 @@ public class QuestionBankController {
         return R.ok(questionBankPO);
     }
 
-    @GetMapping("/detail/page")
+    @PostMapping("/detail/page")
     public R getDetailPage(@RequestBody PageDTO pageDTO) {
         Page<QuestionBank> page = questionBankService.getPage(pageDTO);
         return R.ok(page);

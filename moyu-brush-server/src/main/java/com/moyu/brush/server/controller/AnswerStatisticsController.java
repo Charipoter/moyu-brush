@@ -50,7 +50,7 @@ public class AnswerStatisticsController {
 
     @PostMapping("/rank/total/time")
     public R increaseTotalTime(@RequestParam Long userId, @RequestParam Long increasedTime) {
-        answerStatisticsService.increaseTotalTime(increasedTime, increasedTime);
+        answerStatisticsService.increaseTotalTime(userId, increasedTime);
         return R.ok();
     }
 
