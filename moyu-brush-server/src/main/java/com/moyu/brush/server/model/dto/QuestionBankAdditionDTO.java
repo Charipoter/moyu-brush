@@ -11,5 +11,5 @@ import java.util.List;
 public class QuestionBankAdditionDTO {
     private String name;
     private String description;
-    private List<QuestionBankItemAdditionDTO> questionBankItemAdditionDTOList;
+    private List<EvaluationQuestionAdditionDTO> evaluationQuestionAdditionDTOList;
 }

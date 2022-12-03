@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class QuestionBankItem {
+public class EvaluableQuestion {
 
     private Question question;
     private EvaluationRule evaluationRule;

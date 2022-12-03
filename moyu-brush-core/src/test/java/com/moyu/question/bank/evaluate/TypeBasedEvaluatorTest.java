@@ -2,7 +2,7 @@ package com.moyu.question.bank.evaluate;
 
 import com.moyu.question.bank.evaluate.rule.DelegatingEvaluationRuleResolver;
 import com.moyu.question.bank.evaluate.rule.EvaluationRule;
-import com.moyu.question.bank.model.bank.QuestionBankItem;
+import com.moyu.question.bank.model.bank.EvaluableQuestion;
 import com.moyu.question.bank.model.question.Answer;
 import com.moyu.question.bank.model.question.Question;
 import com.moyu.question.bank.model.question.QuestionType;
@@ -21,7 +21,7 @@ class TypeBasedEvaluatorTest {
         );
         QuestionType type = new QuestionType();
 
-        QuestionBankItem questionBankItem = new QuestionBankItem();
+        EvaluableQuestion evaluableQuestion = new EvaluableQuestion();
         Question question = new Question();
 
         Answer standardAnswer = Answer.builder()
@@ -35,8 +35,8 @@ class TypeBasedEvaluatorTest {
                 .build();
 
         question.setAnswer(standardAnswer);
-        questionBankItem.setQuestion(question);
-        questionBankItem.setEvaluationRule(rule);
+        evaluableQuestion.setQuestion(question);
+        evaluableQuestion.setEvaluationRule(rule);
 
         Answer submittedAnswer = Answer.builder()
                 .option(1, null, "1")
@@ -50,7 +50,7 @@ class TypeBasedEvaluatorTest {
 
         GenericEvaluator evaluator = new GenericEvaluator();
 
-        EvaluationResult result = evaluator.evaluate(questionBankItem, submittedAnswer);
+        EvaluationResult result = evaluator.evaluate(evaluableQuestion, submittedAnswer);
 
         System.out.println(result);
     }

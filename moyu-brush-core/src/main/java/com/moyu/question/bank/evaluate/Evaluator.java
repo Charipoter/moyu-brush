@@ -1,6 +1,6 @@
 package com.moyu.question.bank.evaluate;
 
-import com.moyu.question.bank.model.bank.QuestionBankItem;
+import com.moyu.question.bank.model.bank.EvaluableQuestion;
 import com.moyu.question.bank.model.question.Answer;
 
 /**
@@ -8,6 +8,6 @@ import com.moyu.question.bank.model.question.Answer;
  */
 public interface Evaluator {
 
-    EvaluationResult evaluate(QuestionBankItem question, Answer submittedAnswer);
+    EvaluationResult evaluate(EvaluableQuestion question, Answer submittedAnswer);
 
 }

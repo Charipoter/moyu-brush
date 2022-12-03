@@ -18,7 +18,7 @@ public class AsyncTransactionSupport {
                                                           CountDownLatch countDownLatch,
                                                           AtomicBoolean rollback) {
 
-        OUT r = null;
+        OUT r;
         try {
             // 将事务传播进去
             r = function.apply(item);

@@ -1,16 +1,16 @@
 package com.moyu.brush.server.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.moyu.brush.server.model.dto.EvaluationQuestionAdditionDTO;
 import com.moyu.brush.server.model.dto.PageDTO;
 import com.moyu.brush.server.model.dto.QuestionBankAdditionDTO;
-import com.moyu.brush.server.model.dto.QuestionBankItemAdditionDTO;
-import com.moyu.brush.server.model.po.QuestionBankItemPo;
+import com.moyu.brush.server.model.po.EvaluableQuestionPo;
 import com.moyu.brush.server.model.po.QuestionBankPo;
 import com.moyu.brush.server.service.*;
 import com.moyu.brush.server.util.AsyncUtil;
 import com.moyu.question.bank.evaluate.EvaluationResult;
+import com.moyu.question.bank.model.bank.EvaluableQuestion;
 import com.moyu.question.bank.model.bank.QuestionBank;
-import com.moyu.question.bank.model.bank.QuestionBankItem;
 import com.moyu.question.bank.model.bank.QuestionBankMetadata;
 import com.moyu.question.bank.model.question.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +23,11 @@ import java.util.concurrent.ExecutorService;
 @Service
 public class QuestionBankServiceImpl implements QuestionBankService {
     @Autowired
-    private QuestionBankItemPoService questionBankItemPoService;
+    private EvaluableQuestionPoService evaluableQuestionPoService;
     @Autowired
     private QuestionBankPoService questionBankPoService;
     @Autowired
-    private QuestionBankItemService questionBankItemService;
+    private EvaluableQuestionService evaluableQuestionService;
     @Autowired
     private ExecutorService executorService;
     @Autowired
@@ -67,10 +67,10 @@ public class QuestionBankServiceImpl implements QuestionBankService {
         // 拿到 bankId 交给 item
         long questionBankId = questionBankPo.getId();
 
-        List<QuestionBankItemAdditionDTO> questionBankItemAdditionDTOList = additionDTO.getQuestionBankItemAdditionDTOList();
-        questionBankItemAdditionDTOList.forEach(dto -> dto.setQuestionBankId(questionBankId));
+        List<EvaluationQuestionAdditionDTO> evaluationQuestionAdditionDTOList = additionDTO.getEvaluationQuestionAdditionDTOList();
+        evaluationQuestionAdditionDTOList.forEach(dto -> dto.setQuestionBankId(questionBankId));
         // 注意事务传播
-        return questionBankItemService.addList(questionBankItemAdditionDTOList);
+        return evaluableQuestionService.addList(evaluationQuestionAdditionDTOList);
     }
 
     @Override
@@ -91,16 +91,16 @@ public class QuestionBankServiceImpl implements QuestionBankService {
                 .description(questionBankPo.getDescription())
                 .build();
         // 找到包含的题目，解析规则
-        List<QuestionBankItemPo> questionBankItemPoList =
-                questionBankItemPoService.getAllByQuestionBankId(questionBankPo.getId());
+        List<EvaluableQuestionPo> evaluableQuestionPoList =
+                evaluableQuestionPoService.getAllByQuestionBankId(questionBankPo.getId());
 
-        List<QuestionBankItem> questionBankItems = AsyncUtil.runFunctions(
-                questionBankItemService::toQuestionBankItem, questionBankItemPoList, executorService);
+        List<EvaluableQuestion> evaluableQuestions = AsyncUtil.runFunctions(
+                evaluableQuestionService::toQuestionBankItem, evaluableQuestionPoList, executorService);
 
         return QuestionBank.builder()
                 .name(questionBankPo.getName())
                 .metadata(metadata)
-                .questionBankItems(questionBankItems)
+                .evaluableQuestions(evaluableQuestions)
                 .build();
     }
 
